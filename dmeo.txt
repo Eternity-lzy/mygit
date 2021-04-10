@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 10005
+
+typedef struct
+{
+    int n;    ///城市个数
+    int e;    ///道路数
+
+    int edges[MAX][MAX];
+}graph;
+
+int visit[MAX]={0};    ///标记，访问过的记1 未访问记0
+int flag=0;
+void DFS(graph *g,int i)   ///整体连通性判断
+{
+    flag++;         ///能连通的点数
+    visit[i]=1;    ///已经访问过的  标记为1
+    int j=0;
+    for(j=1;j<=g->n;j++)    ///深搜遍历
+    {
+        if(g->edges[i][j]<MAX&&visit[j]!=1)
+        {
+            DFS(g,j);
+        }
+    }
+}
+
+void input(graph *g)    ///输入及初始化
+{
+    scanf("%d%d",&g->n,&g->e);
+    int i,j,k,l;  
+    for(i=1;i<=g->n;i++)    ///将每两个城市连通代价初始化为   MAX
+    {
+        for(j=1;j<=g->n;j++)
+        {
+            g->edges[i][j]=MAX;
+        }
+
+    }
+    for (i=0;i<g->e;i++)
+    {
+        scanf("%d%d%d",&j,&k,&l);     ///输入可连通城市及代价
+        g->edges[j][k]=l;
+        g->edges[k][j]=l;
+    }
+    return ;
+}
+
+int weight=0;  ///总代价
+void prim(graph *g)
+{
+    int min,i,j,k;
+    int adjvex[MAX];    ///两个城市通性
+    int lowcost[MAX];   ///两个城市连通最小代价
+    lowcost[1]=0;
+    adjvex[1]=0;
+    for(i=1;i<=g->n;i++)    ///初始化  1号城市与每个城市的连通性及最小代价
+    {
+        lowcost[i]=MAX;
+        if(g->edges[1][i]!=0)
+        {
+            lowcost[i]=g->edges[1][i];
+            adjvex[i]=1;
+        }
+
+    }
+
+    for(i=2;i<=g->n;i++)
+    {
+        min=MAX;
+        j=2;
+        k=0;
+        while(j<=g->n)   ///找权值最小的边
+        {
+            if(lowcost[j]!=0&&lowcost[j]<min)
+            {
+                min=lowcost[j];
+                k=j;
+            }
+            j++;
+        }
+        weight+=g->edges[adjvex[k]][k];
+        //printf("(%d,%d)\n",adjvex[k],k);
+        lowcost[k]=0;   ///自身与自身之间代价为0
+
+        for(j=1;j<=g->n;j++)   ///找最小代价  并更新
+        {
+            if(lowcost[j]!=0&&g->edges[k][j]<lowcost[j])
+            {
+                lowcost[j]=g->edges[k][j];
+                adjvex[j]=k;
+            }
+        }
+    }
+    return ;
+}
+
+int main()
+{
+    graph *g=(graph*)malloc(sizeof(graph));
+    input(g);
+    DFS(g,1);
+    if(flag!=g->n)
+    {
+        printf("impossible");
+        return 0;
+    }
+    prim(g);
+    printf("%d",weight);
+    return 0;
+}
